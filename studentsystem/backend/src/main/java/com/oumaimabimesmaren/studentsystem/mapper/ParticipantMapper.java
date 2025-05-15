@@ -73,6 +73,10 @@ public class ParticipantMapper {
     }
 
     public ParticipantResponseDTO toResponseDTO(Participant participant) {
+        if (participant == null) {
+            return null;
+        }
+
         ParticipantResponseDTO dto = new ParticipantResponseDTO();
         dto.setId(participant.getId());
         dto.setFirstName(participant.getF_name());
@@ -82,6 +86,7 @@ public class ParticipantMapper {
         dto.setCity(participant.getVille());
         dto.setCountry(participant.getCountry());
         dto.setAddress(participant.getAddress());
+        dto.setPhoto(participant.getProfilPic());
         dto.setNewsletterFrequency(participant.getNewsletterFrequency());
         return dto;
     }

@@ -13,8 +13,8 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User,Long> {
     Optional<User> findByEmail(String email);
 
-    @Query("SELECT new com.oumaimabimesmaren.studentsystem.authentication.CustomUserDetails(u.email, u.password, u.role) FROM User u WHERE u.email = :email")
-    Optional<UserDetails> findUserDetailsByEmail(@Param("email") String email);
+    Optional<User> findByEmail(String email);
+    
 
     Optional <User> findByEmailIgnoreCase(String email);
     List<User> findAll();

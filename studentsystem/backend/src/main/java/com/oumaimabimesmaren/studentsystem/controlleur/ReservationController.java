@@ -6,6 +6,9 @@ import com.oumaimabimesmaren.studentsystem.mapper.ReservationMapper;
 import com.oumaimabimesmaren.studentsystem.model.Reservation;
 import com.oumaimabimesmaren.studentsystem.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,37 +23,78 @@ public class ReservationController {
     @Autowired
     private ReservationMapper reservationMapper;
 
-    @PostMapping("/create")
-    public ReservationResponseDTO createReservation(
-            @RequestParam Long participantId,
-            @RequestParam Long eventId) {
-        return reservationService.createReservation(participantId, eventId);
+    @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<ReservationResponseDTO>> getAllReservations() {
+        List<ReservationResponseDTO> reservations = reservationService.getAllReservations();
+        return ResponseEntity.ok(reservations);
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PARTICIPANT', 'ORGANIZER')")
+    public ResponseEntity<ReservationResponseDTO> getReservationById(@PathVariable Long id) {
+        ReservationResponseDTO reservation = reservationService.getReservationById(id);
+        return ResponseEntity.ok(reservation);
+    }
 
-    @PutMapping("/modify")
-    public ReservationResponseDTO modifyReservation(@RequestParam Long reservationId, @RequestParam Long newEventId) {
-        return reservationService.modifyReservation(reservationId, newEventId);
+    @GetMapping("/my")
+    @PreAuthorize("hasRole('PARTICIPANT')")
+    public ResponseEntity<List<ReservationResponseDTO>> getMyReservations(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).body(null);
+        }
+        List<ReservationResponseDTO> reservations = reservationService.getMyReservations(authentication.getName());
+        return ResponseEntity.ok(reservations);
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('PARTICIPANT')")
+    public ResponseEntity<ReservationResponseDTO> createReservation(
+            Authentication authentication,
+            @RequestBody CreateReservationDTO createDTO) {
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseEntity.status(401).body(null);
+        }
+        ReservationResponseDTO reservation = reservationService.createReservation(authentication.getName(), createDTO.getEventId());
+        return ResponseEntity.ok(reservation);
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PARTICIPANT')")
+    public ResponseEntity<ReservationResponseDTO> updateReservation(
+            @PathVariable Long id,
+            @RequestBody UpdateReservationDTO updateDTO) {
+        ReservationResponseDTO updated = reservationService.updateReservation(id, updateDTO);
+        return ResponseEntity.ok(updated);
     }
 
     @PostMapping("/{id}/cancel")
-    public CancellationResult cancelReservation(
+    @PreAuthorize("hasAnyRole('ADMIN', 'PARTICIPANT')")
+    public ResponseEntity<CancellationResult> cancelReservation(
             @PathVariable Long id,
-            @RequestParam String reason,
-            @RequestParam(required = false) Boolean forceCancel) {
-        if (Boolean.TRUE.equals(forceCancel)) {
-            return reservationService.adminCancelReservation(id, reason);
-        }
-        return reservationService.cancelReservation(id, reason);
+            @RequestBody CancelReservationDTO cancelDTO) {
+        CancellationResult result = reservationService.cancelReservation(id, cancelDTO.getReason());
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/{id}/confirm")
-    public void confirmReservation(@PathVariable Long id) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    public ResponseEntity<Void> confirmReservation(@PathVariable Long id) {
         reservationService.confirmReservation(id);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/participant/{participantId}")
-    public List<ReservationResponseDTO> getParticipantReservations(@PathVariable Long participantId) {
-        return reservationService.getParticipantReservations(participantId);
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    public ResponseEntity<List<ReservationResponseDTO>> getParticipantReservations(@PathVariable Long participantId) {
+        List<ReservationResponseDTO> reservations = reservationService.getParticipantReservations(participantId);
+        return ResponseEntity.ok(reservations);
+    }
+
+    @GetMapping("/event/{eventId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ORGANIZER')")
+    public ResponseEntity<List<ReservationResponseDTO>> getEventReservations(@PathVariable Long eventId) {
+        List<ReservationResponseDTO> reservations = reservationService.getEventReservations(eventId);
+        return ResponseEntity.ok(reservations);
     }
 }

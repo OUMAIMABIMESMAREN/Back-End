@@ -20,7 +20,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtUtil jwtUtil;
-    @Autowired private UserDetailsService userDetailsService;
+    @Autowired 
+    private UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -31,42 +32,46 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = null;
         String email = null;
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);  // Extract token
-            email = jwtUtil.extractUsername(token);  // Extract username from token
-        }
-
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-
-            if (jwtUtil.isTokenValid(token)) {
-                // Token is valid
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
-                // Token is invalid
-                logger.warn("Invalid or expired token for user: " + email);
-                SecurityContextHolder.clearContext();  // Clear context immediately after warning
+        try {
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);  // Extract token
+                email = jwtUtil.extractUsername(token);  // Extract username from token
             }
-        } else {
-            // Missing or invalid Authorization header
-            logger.warn("Authorization header is missing or malformed.");
-            SecurityContextHolder.clearContext();  // Clear context immediately after warning
+
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                if (jwtUtil.isTokenValid(token)) {
+                    // Token is valid
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    // Token is invalid
+                    logger.warn("Invalid or expired token for user: " + email);
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter().write("Invalid or expired token");
+                    return;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error processing JWT token", e);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Error processing authentication token");
+            return;
         }
+
         filterChain.doFilter(request, response);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
-        return path.startsWith("/api/auth**") ||
+        return path.startsWith("/api/auth/") ||
                 path.startsWith("/api/events/search") ||
                 path.startsWith("/public") ||
                 path.equals("/login") ||
-                path.equals("/signup"); // Adjust based on your actual routes
+                path.equals("/signup");
     }
-
-
 }

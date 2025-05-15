@@ -2,12 +2,14 @@ package com.oumaimabimesmaren.studentsystem.service.impl;
 
 import com.oumaimabimesmaren.studentsystem.dto.CancellationResult;
 import com.oumaimabimesmaren.studentsystem.dto.ReservationResponseDTO;
+import com.oumaimabimesmaren.studentsystem.dto.UpdateReservationDTO;
 import com.oumaimabimesmaren.studentsystem.exception.ResourceNotFoundException;
 import com.oumaimabimesmaren.studentsystem.mapper.ReservationMapper;
 import com.oumaimabimesmaren.studentsystem.model.*;
 import com.oumaimabimesmaren.studentsystem.repository.*;
 import com.oumaimabimesmaren.studentsystem.service.CancellationPolicyService;
 import com.oumaimabimesmaren.studentsystem.service.NotificationService;
+import com.oumaimabimesmaren.studentsystem.service.ParticipantService;
 import com.oumaimabimesmaren.studentsystem.service.ReservationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,12 +44,37 @@ public class ReservationServiceImpl implements ReservationService {
     @Autowired
     private ReservationMapper reservationMapper;
 
+    @Autowired
+    private ParticipantService participantService;
+
+    @Override
+    public List<ReservationResponseDTO> getAllReservations() {
+        List<Reservation> reservations = reservationRepository.findAll();
+        return reservations.stream()
+                .map(reservationMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ReservationResponseDTO getReservationById(Long id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
+        return reservationMapper.toResponseDTO(reservation);
+    }
+
+    @Override
+    public List<ReservationResponseDTO> getMyReservations(String email) {
+        Participant participant = participantService.findByEmail(email);
+        List<Reservation> reservations = reservationRepository.findByParticipantId(participant.getId());
+        return reservations.stream()
+                .map(reservationMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     @Override
     @Transactional
-    public ReservationResponseDTO createReservation(Long participantId, Long eventId) {
-        Participant participant = participantRepository.findById(participantId)
-                .orElseThrow(() -> new ResourceNotFoundException("Participant", participantId));
-
+    public ReservationResponseDTO createReservation(String email, Long eventId) {
+        Participant participant = participantService.findByEmail(email);
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event", eventId));
 
@@ -61,20 +88,29 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationMapper.toResponseDTO(saved);
     }
 
-
     @Override
     @Transactional
-    public ReservationResponseDTO modifyReservation(Long reservationId, Long newEventId) {
-        Reservation reservation = reservationRepository.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation", reservationId));
-        Event newEvent = eventRepository.findById(newEventId)
-                .orElseThrow(() -> new ResourceNotFoundException("Event", newEventId));
+    public ReservationResponseDTO updateReservation(Long id, UpdateReservationDTO updateDTO) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
 
-        reservation.modifyReservation(newEvent);
+        if (updateDTO.getNewEventId() != null) {
+            Event newEvent = eventRepository.findById(updateDTO.getNewEventId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Event", updateDTO.getNewEventId()));
+            reservation.modifyReservation(newEvent);
+        }
+
+        if (updateDTO.getStatus() != null) {
+            reservation.setStatus(updateDTO.getStatus());
+        }
+
+        if (updateDTO.getQuantity() != null) {
+            reservation.setQuantity(updateDTO.getQuantity());
+        }
+
         Reservation updated = reservationRepository.save(reservation);
         return reservationMapper.toResponseDTO(updated);
     }
-
 
     @Override
     @Transactional
@@ -92,15 +128,15 @@ public class ReservationServiceImpl implements ReservationService {
     public List<ReservationResponseDTO> getParticipantReservations(Long participantId) {
         List<Reservation> reservations = reservationRepository.findByParticipantId(participantId);
         return reservations.stream()
-                .map(res -> new ReservationResponseDTO(
-                        res.getId(),
-                        res.getParticipant().getId(),
-                        res.getParticipant().getF_name() + " " + res.getParticipant().getL_name(),
-                        res.getEvent().getId(),
-                        res.getEvent().getTitle(),
-                        res.getStatus(),
-                        res.getEvent().getPrice()
-                ))
+                .map(reservationMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ReservationResponseDTO> getEventReservations(Long eventId) {
+        List<Reservation> reservations = reservationRepository.findByEventId(eventId);
+        return reservations.stream()
+                .map(reservationMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 

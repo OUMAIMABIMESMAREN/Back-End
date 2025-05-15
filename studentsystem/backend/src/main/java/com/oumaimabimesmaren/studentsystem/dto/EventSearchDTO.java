@@ -1,10 +1,13 @@
 package com.oumaimabimesmaren.studentsystem.dto;
 
 import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.Min;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.Date;
 
+@Data
 public class EventSearchDTO {
     private String title;
     private String category;
@@ -12,7 +15,9 @@ public class EventSearchDTO {
     private LocalDate fromDate;
     @FutureOrPresent(message = "End date must be in the future")
     private LocalDate   toDate;
+    @Min(0)
     private Double minPrice;
+    @Min(0)
     private Double maxPrice;
     private String location;
     private String query;

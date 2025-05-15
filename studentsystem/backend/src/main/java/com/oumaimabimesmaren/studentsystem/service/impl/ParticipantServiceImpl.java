@@ -96,8 +96,12 @@ public class ParticipantServiceImpl implements ParticipantService {
 
     @Override
     public Participant findByEmail(String email) {
-        return participantRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Participant not found with email: " + email));
+        try {
+            return participantRepository.findByEmail(email)
+                    .orElseThrow(() -> new UsernameNotFoundException("Participant not found with email: " + email));
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding participant by email: " + e.getMessage());
+        }
     }
 
 

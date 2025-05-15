@@ -19,6 +19,4 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     int countDistinctParticipantsByOrganizerId(@Param("organizerId") Long organizerId);
 
     Optional<Participant> findByEmail(String email);
-
-
 }

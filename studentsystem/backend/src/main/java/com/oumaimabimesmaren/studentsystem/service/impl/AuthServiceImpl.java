@@ -37,7 +37,7 @@ public class AuthServiceImpl implements AuthService {
         User user = userRepository.findByEmail(authRequest.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + authRequest.getEmail()));
 
-        String token = jwtUtil.generateToken(user.getEmail());
+        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
         return ResponseEntity.ok(new AuthResponse(user.getId(),token, "Login successful!", user.getRole()));
     }
 

@@ -24,22 +24,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws ServletException, IOException {
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+    String authHeader = request.getHeader("Authorization");
 
-            if (tokenBlacklistService.isTokenBlacklisted(token)) {
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Token is blacklisted. Please log in again.");
-                return;
-            }
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        String token = authHeader.substring(7);
 
-            // Proceed with existing JWT validation and user authentication...
+        // ✅ Check if token is blacklisted
+        if (tokenBlacklistService.isTokenBlacklisted(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token is blacklisted. Please log in again.");
+            return;
         }
 
-        filterChain.doFilter(request, response);
+        // ✅ Extract username and role
+        String username = jwtService.extractUsername(token);
+        String role = jwtService.extractRole(token); // NEW
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (jwtService.isTokenValid(token)) {
+                // ✅ Add role as authority
+                List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(role)); // e.g., ROLE_PARTICIPANT
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(username, null, authorities);
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+            }
+        }
     }
+
+    filterChain.doFilter(request, response);
+}
+
 }

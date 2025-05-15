@@ -4,7 +4,7 @@ import com.oumaimabimesmaren.studentsystem.model.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -54,7 +54,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null; // Or return roles as authorities if needed
+        return List.of(new SimpleGrantedAuthority("ROLE_" + this.role)); // ✅ Add ROLE_ prefix
     }
 
     @Override
