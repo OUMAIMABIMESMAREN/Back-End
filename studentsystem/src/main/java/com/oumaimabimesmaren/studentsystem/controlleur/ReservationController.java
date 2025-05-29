@@ -38,11 +38,13 @@ public class ReservationController {
 
     @GetMapping("/my")
     @PreAuthorize("hasRole('PARTICIPANT')")
-    public ResponseEntity<List<ReservationResponseDTO>> getMyReservations(Authentication authentication) {
+    public ResponseEntity<List<ReservationResponseDTO>> getMyReservations(
+            Authentication authentication,
+            @RequestParam(required = false, defaultValue = "upcoming") String status) {
         if (authentication == null || authentication.getName() == null) {
             return ResponseEntity.status(401).body(null);
         }
-        List<ReservationResponseDTO> reservations = reservationService.getMyReservations(authentication.getName());
+        List<ReservationResponseDTO> reservations = reservationService.getMyReservations(authentication.getName(), status);
         return ResponseEntity.ok(reservations);
     }
 

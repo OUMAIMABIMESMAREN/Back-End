@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.time.LocalDateTime;
 
 @Service
 public class ReservationServiceImpl implements ReservationService {
@@ -63,11 +64,29 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
-    public List<ReservationResponseDTO> getMyReservations(String email) {
-        Participant participant = participantService.findByEmail(email);
+    public List<ReservationResponseDTO> getMyReservations(String email, String status) {
+        Participant participant = participantRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Participant not found"));
+
         List<Reservation> reservations = reservationRepository.findByParticipantId(participant.getId());
+        LocalDateTime now = LocalDateTime.now();
+
         return reservations.stream()
-                .map(ReservationMapper::toResponseDTO)
+                .filter(reservation -> {
+                    switch (status.toLowerCase()) {
+                        case "upcoming":
+                            return reservation.getBookingStatus().equals("CONFIRMED") &&
+                                   reservation.getEvent().getEventDate().isAfter(now);
+                        case "past":
+                            return reservation.getBookingStatus().equals("CONFIRMED") &&
+                                   reservation.getEvent().getEventDate().isBefore(now);
+                        case "cancelled":
+                            return reservation.getBookingStatus().equals("CANCELLED");
+                        default:
+                            return true;
+                    }
+                })
+                .map(ReservationMapper::toDTO)
                 .collect(Collectors.toList());
     }
 

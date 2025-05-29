@@ -1,7 +1,7 @@
 package com.oumaimabimesmaren.studentsystem.service;
 
 import com.oumaimabimesmaren.studentsystem.dto.OrganizerDashboardDTO;
-import com.oumaimabimesmaren.studentsystem.dto.ParticipantDTO;
+import com.oumaimabimesmaren.studentsystem.dto.OrganizerResponseDTO;
 import com.oumaimabimesmaren.studentsystem.model.Organizer;
 import com.oumaimabimesmaren.studentsystem.model.Participant;
 import java.util.List;
@@ -18,4 +18,5 @@ public interface OrganizerService {
     Organizer getOrganizerById(Long id);
     List<Organizer> getAllOrganizers();
     Organizer updateOrganizer(Long id, Organizer updatedData);
+    List<OrganizerResponseDTO> searchOrganizers(String name, String location, String category);
 }

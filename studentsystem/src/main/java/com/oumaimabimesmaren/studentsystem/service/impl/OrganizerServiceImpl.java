@@ -1,11 +1,13 @@
 package com.oumaimabimesmaren.studentsystem.service.impl;
 import com.oumaimabimesmaren.studentsystem.dto.EventSummaryDTO;
 import com.oumaimabimesmaren.studentsystem.dto.OrganizerDashboardDTO;
+import com.oumaimabimesmaren.studentsystem.dto.OrganizerResponseDTO;
 import com.oumaimabimesmaren.studentsystem.dto.ParticipantDTO;
 import com.oumaimabimesmaren.studentsystem.model.Event;
 import com.oumaimabimesmaren.studentsystem.model.Organizer;
 import com.oumaimabimesmaren.studentsystem.model.Participant;
 import com.oumaimabimesmaren.studentsystem.model.Remboursement;
+import com.oumaimabimesmaren.studentsystem.mapper.OrganizerMapper;
 import com.oumaimabimesmaren.studentsystem.repository.*;
 import com.oumaimabimesmaren.studentsystem.service.OrganizerService;
 import jakarta.persistence.EntityNotFoundException;
@@ -137,5 +139,25 @@ public class OrganizerServiceImpl implements OrganizerService {
         return organizerRepository.save(existing);
     }
 
-
+    @Override
+    public List<OrganizerResponseDTO> searchOrganizers(String name, String location, String category) {
+        List<Organizer> organizers = organizerRepository.findAll();
+        
+        return organizers.stream()
+            .filter(organizer -> {
+                boolean matchesName = name == null || name.isEmpty() ||
+                    (organizer.getF_name() + " " + organizer.getL_name()).toLowerCase().contains(name.toLowerCase());
+                
+                boolean matchesLocation = location == null || location.isEmpty() ||
+                    organizer.getVille().toLowerCase().contains(location.toLowerCase());
+                
+                boolean matchesCategory = category == null || category.isEmpty() ||
+                    organizer.getEvents().stream()
+                        .anyMatch(event -> event.getCategory().toLowerCase().contains(category.toLowerCase()));
+                
+                return matchesName && matchesLocation && matchesCategory;
+            })
+            .map(OrganizerMapper::toResponseDTO)
+            .collect(Collectors.toList());
+    }
 }

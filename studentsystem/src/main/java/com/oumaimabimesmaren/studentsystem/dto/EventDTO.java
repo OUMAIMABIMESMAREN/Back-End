@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -18,7 +19,7 @@ public class EventDTO {
     private String lieu; // "lieu" not "location" because that's your field name!
 
     @NotNull(message = "Event date is required")
-    private Date eventDate;
+    private LocalDateTime eventDate;
 
     private Double price;
     private Integer capacity;

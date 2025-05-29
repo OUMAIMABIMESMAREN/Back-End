@@ -4,6 +4,8 @@ import com.oumaimabimesmaren.studentsystem.model.Event;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.criteria.*;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -17,8 +19,8 @@ public class EventRepositoryImpl implements EventRepositoryCustom {
     public List<Event> findAdvanced(
             String title,
             String category,
-            Date fromDate,
-            Date toDate,
+            LocalDateTime fromDate,
+            LocalDateTime toDate,
             Double minPrice,
             Double maxPrice,
             String location

@@ -9,14 +9,15 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
 @Repository
 public interface EventRepository extends JpaRepository<Event, Long>, EventRepositoryCustom {
     List<Event> findByOrganizerId(Long organizerId);
-    List<Event> findByEventDateAfter(Date date);
-    List<Event> findByEventDateAfterAndStatusNot(Date date, String status);
+    List<Event> findByEventDateAfter(LocalDateTime date);
+    List<Event> findByEventDateAfterAndStatusNot(LocalDateTime date, String status);
 
     @Query("SELECT COUNT(e) FROM Event e WHERE e.organizer.id = :organizerId")
     int countByOrganizerId(@Param("organizerId") Long organizerId);
@@ -35,7 +36,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, EventReposi
 
     List<Event> findByTitleContainingAndLieu(String title, String lieu);
     List<Event> findByTitleContainingAndLieuAndEventDateBetween(String title, String lieu,
-                                                           LocalDate startDate, LocalDate endDate);
+                                                           LocalDateTime startDate, LocalDateTime endDate);
     List<Event> findByParticipants_Id(Long participantId);
 
     @Query("SELECT e FROM Event e WHERE " +
@@ -49,8 +50,8 @@ public interface EventRepository extends JpaRepository<Event, Long>, EventReposi
     List<Event> searchEvents(
             @Param("title") String title,
             @Param("category") String category,
-            @Param("fromDate") LocalDate fromDate,
-            @Param("toDate") LocalDate toDate,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
             @Param("minPrice") Double minPrice,
             @Param("maxPrice") Double maxPrice,
             @Param("location") String location);

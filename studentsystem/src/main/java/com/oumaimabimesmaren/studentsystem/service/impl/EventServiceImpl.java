@@ -16,6 +16,9 @@ import com.oumaimabimesmaren.studentsystem.service.EventService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.stream.Collectors;
 
 import java.time.ZoneId;
@@ -36,10 +39,18 @@ public class EventServiceImpl implements EventService {
     
     @Autowired
     private ParticipantMapper participantMapper;
+    @Override
+    public List<EventResponseDTO> getUpcomingEventsForHomePage() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Event> events = eventRepository.findByEventDateAfterAndStatusNot(now, "CANCELLED");
+        return events.stream()
+                .map(EventMapper::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 
     @Override
     public List<EventResponseDTO> getUpcomingEvents() {
-        Date now = new Date();
+        LocalDateTime now = LocalDateTime.now();
         List<Event> events = eventRepository.findByEventDateAfterAndStatusNot(now, "CANCELLED");
         return events.stream()
                 .map(EventMapper::toResponseDTO)
@@ -94,14 +105,14 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventResponseDTO> searchEvents(@Valid EventSearchDTO searchCriteria) {
-        Date fromDate = Date.from(searchCriteria.getFromDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
-        Date toDate = Date.from(searchCriteria.getToDate().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        LocalDateTime fromDateTime = searchCriteria.getFromDate();
+        LocalDateTime toDateTime = searchCriteria.getToDate(); // end of the day
 
         List<Event> events = eventRepository.findAdvanced(
                 searchCriteria.getTitle(),
                 searchCriteria.getCategory(),
-                fromDate,
-                toDate,
+                fromDateTime,
+                toDateTime,
                 searchCriteria.getMinPrice(),
                 searchCriteria.getMaxPrice(),
                 searchCriteria.getLocation()
@@ -111,6 +122,7 @@ public class EventServiceImpl implements EventService {
                 .map(EventMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public List<EventResponseDTO> getEventsByOrganizer(Long organizerId) {

@@ -3,6 +3,7 @@ package com.oumaimabimesmaren.studentsystem.dto;
 import com.oumaimabimesmaren.studentsystem.model.Admin;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -15,7 +16,7 @@ public class EventResponseDTO {
     private Long id;
     private String title;
     private String lieu;
-    private Date eventDate;
+    private LocalDateTime eventDate;
     private Double price;
     private Integer capacity;
     private String category;

@@ -21,8 +21,7 @@ public class CancellationPolicyService {
     public void applyCancellationPolicy(Reservation reservation, Event event) {
         // Set deadline (e.g., 7 days before event)
         LocalDate deadline = event.getEventDate()
-                .toInstant()
-                .atZone(ZoneId.systemDefault())
+                .atZone(ZoneId.systemDefault()) // attach time zone to LocalDateTime
                 .toLocalDate()
                 .minusDays(freeCancellationPeriodDays);
 

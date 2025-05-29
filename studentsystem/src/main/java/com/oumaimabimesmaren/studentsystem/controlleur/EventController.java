@@ -20,6 +20,11 @@ public class EventController {
 
     @Autowired
     private EventService eventService;
+    @GetMapping("/home/upcoming")
+    public ResponseEntity<List<EventResponseDTO>> getUpcomingEventsForHomePage() {
+        List<EventResponseDTO> events = eventService.getUpcomingEventsForHomePage();
+        return ResponseEntity.ok(events);
+    }
 
     @GetMapping("/upcoming")
     @PreAuthorize("hasAnyRole('ADMIN', 'PARTICIPANT', 'ORGANIZER')")

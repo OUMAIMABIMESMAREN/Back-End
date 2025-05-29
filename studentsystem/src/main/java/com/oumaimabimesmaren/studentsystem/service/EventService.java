@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface EventService {
     List<EventResponseDTO> getUpcomingEvents();
+    List<EventResponseDTO> getUpcomingEventsForHomePage();
     EventResponseDTO getEventById(Long id);
     List<ParticipantResponseDTO> getEventParticipants(Long id);
     EventResponseDTO addEvent(EventDTO eventDTO);

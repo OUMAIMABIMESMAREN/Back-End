@@ -40,7 +40,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/events/search").permitAll()
-                .requestMatchers("/api/events/upcoming").permitAll()
+                .requestMatchers("/api/events/**").permitAll()
                 .requestMatchers("/public/**").permitAll()
                 .requestMatchers("/api/participants/**").authenticated() // <- You may want to secure this later
                 .requestMatchers("/api/organizer/**").permitAll()
@@ -71,6 +71,20 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/events/home/upcoming").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                );
+        return http.build();
     }
 }
 

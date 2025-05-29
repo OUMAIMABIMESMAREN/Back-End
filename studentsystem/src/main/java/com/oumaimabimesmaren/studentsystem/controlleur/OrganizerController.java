@@ -52,6 +52,18 @@ public class OrganizerController {
         return ResponseEntity.ok(dtos);
     }
 
+    // Add new search endpoint
+    @GetMapping("/search")
+    public ResponseEntity<List<OrganizerResponseDTO>> searchOrganizers(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String category) {
+
+        List<OrganizerResponseDTO> dtos = organizerService.searchOrganizers(name, location, category);
+        return ResponseEntity.ok(dtos);
+    }
+
+
     // ✅ GET /api/organizer/{id} - Get organizer by ID
     @GetMapping("/{id}")
     public ResponseEntity<OrganizerResponseDTO> getOrganizerById(@PathVariable Long id) {

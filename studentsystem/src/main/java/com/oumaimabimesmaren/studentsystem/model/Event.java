@@ -1,13 +1,10 @@
 package com.oumaimabimesmaren.studentsystem.model;
 
-import com.oumaimabimesmaren.studentsystem.dto.AdminResponseDTO;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 @Data
 @Entity
@@ -31,8 +28,7 @@ public class Event {
     private List<Participant> participants;
 
     @Column(name = "event_date", nullable = false)
-    @Temporal(TemporalType.DATE)
-    private Date eventDate;
+    private LocalDateTime eventDate;
 
     private Double price;
     private int capacity;
