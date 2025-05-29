@@ -1,0 +1,41 @@
+.qr-code-modal {
+    max-width: 400px;
+    width: 90%;
+}
+
+.qr-code-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.qr-code-container img {
+    width: 250px;
+    height: 250px;
+    margin-bottom: 15px;
+}
+
+.qr-code-container p {
+    color: #666;
+    text-align: center;
+    margin: 0;
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px;
+}
+
+.loading-state i {
+    font-size: 2em;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.loading-state p {
+    color: #666;
+    margin: 0;
+} 
